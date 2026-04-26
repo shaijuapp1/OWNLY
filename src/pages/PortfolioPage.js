@@ -15,6 +15,13 @@ const numberFormat = (num) => {
   return num.toLocaleString('en-US');
 };
 
+const formatLocalDateTime = (value) => {
+  if (!value) return 'N/A';
+  const date = value.toDate ? value.toDate() : new Date(value);
+  if (Number.isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleString();
+};
+
 const initialForm = {
   stockName: '',
   symbol: '',
@@ -223,13 +230,14 @@ export default function PortfolioPage() {
                     <th style={{cursor:'pointer'}} onClick={() => handleSort('pl')}>
                       P&amp;L {sortConfig.key === 'pl' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
                     </th>
+                    <th>Last Updated</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan="9">Loading...</td></tr>
+                    <tr><td colSpan="10">Loading...</td></tr>
                   ) : sortedPortfolio.length === 0 ? (
-                    <tr><td colSpan="9">No data</td></tr>
+                    <tr><td colSpan="10">No data</td></tr>
                   ) : (
                     sortedPortfolio.map(item => {
                       const totalBuy = item.buyPrice * item.qty;
@@ -250,6 +258,7 @@ export default function PortfolioPage() {
                           <td>{currencyFormat(totalBuy)}</td>
                           <td>{currencyFormat(value)}</td>
                           <td style={{ color: pl >= 0 ? 'green' : 'red' }}>{currencyFormat(pl)}</td>
+                          <td>{formatLocalDateTime(item.lastUpdated)}</td>
                         </tr>
                       );
                     })
@@ -257,10 +266,11 @@ export default function PortfolioPage() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan="5"><b>Grand Totals</b></td>
+                    <td colSpan="6"><b>Grand Totals</b></td>
                     <td><b>{currencyFormat(totalBuy)}</b></td>
                     <td><b>{currencyFormat(totalValue)}</b></td>
                     <td style={{ color: totalPL >= 0 ? 'green' : 'red' }}><b>{currencyFormat(totalPL)}</b></td>
+                    <td></td>
                   </tr>
                 </tfoot>
               </table>

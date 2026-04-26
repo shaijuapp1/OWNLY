@@ -53,6 +53,8 @@ export default function MyListPage() {
   const [tagFilter, setTagFilter] = useState([]);
   // Search text state for listing
   const [searchText, setSearchText] = useState("");
+  // Explicit toggle to show all items in listing
+  const [showAllItems, setShowAllItems] = useState(false);
   // Search mode: 'tag' or 'text'
   const [searchMode, setSearchMode] = useState("tag");
 
@@ -98,6 +100,11 @@ export default function MyListPage() {
   // Fetch items only when tagFilter changes (in tag mode) or when searchMode changes
   useEffect(() => {
     if (screen !== "listing") return;
+    if (showAllItems) {
+      fetchItems();
+      return;
+    }
+
     if (searchMode === "tag") {
       if (tagFilter.length > 0) {
         fetchItems();
@@ -108,7 +115,7 @@ export default function MyListPage() {
       // In text mode, always fetch all items (for client-side search)
       fetchItems();
     }
-  }, [tagFilter, searchMode, screen]);
+  }, [tagFilter, searchMode, screen, showAllItems]);
 
   const handleAddClick = () => {
     setSelectedItem(null);
@@ -198,9 +205,11 @@ export default function MyListPage() {
                   if (searchMode === "tag") {
                     setSearchMode("text");
                     setTagFilter([]);
+                    setShowAllItems(false);
                   } else {
                     setSearchMode("tag");
                     setSearchText("");
+                    setShowAllItems(false);
                   }
                 }}
                 style={{
@@ -219,9 +228,11 @@ export default function MyListPage() {
                   if (searchMode === "text") {
                     setSearchMode("tag");
                     setSearchText("");
+                    setShowAllItems(false);
                   } else {
                     setSearchMode("text");
                     setTagFilter([]);
+                    setShowAllItems(false);
                   }
                 }}
                 style={{
@@ -234,6 +245,27 @@ export default function MyListPage() {
               >
                 Text Search
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchMode("text");
+                  setSearchText("");
+                  setTagFilter([]);
+                  setShowAllItems(true);
+                }}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 4,
+                  border: '1px solid #007bff',
+                  background: showAllItems ? '#007bff' : '#fff',
+                  color: showAllItems ? '#fff' : '#007bff',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  marginLeft: 8
+                }}
+              >
+                Show All
+              </button>
             </div>
             {/* Tag filter multi-select (only in tag mode) */}
             {searchMode === "tag" && (
@@ -241,6 +273,7 @@ export default function MyListPage() {
                 <DropdownTreeSelect
                   data={buildTagTree(tags, "", tagFilter)}
                   onChange={(currentNode, selectedNodes) => {
+                    setShowAllItems(false);
                     setTagFilter(selectedNodes.map(n => n.value));
                   }}
                   texts={{ placeholder: 'Filter by tags...' }}
@@ -261,7 +294,10 @@ export default function MyListPage() {
                 <input
                   type="text"
                   value={searchText}
-                  onChange={e => setSearchText(e.target.value)}
+                  onChange={e => {
+                    setShowAllItems(false);
+                    setSearchText(e.target.value);
+                  }}
                   placeholder="Search title or description..."
                   style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
                 />
@@ -287,7 +323,26 @@ export default function MyListPage() {
             >+
             </button>
             <div style={{ marginTop: 24 }}>
-              {searchMode === "tag" ? (
+              {showAllItems ? (
+                items.length === 0 ? (
+                  <div style={{ color: '#888', textAlign: 'center', marginTop: 48 }}>No items found.</div>
+                ) : (
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {items.map(item => (
+                      <li key={item.id} style={{ background: '#fff', borderRadius: 8, marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 20, cursor: 'pointer' }} onClick={() => { setSelectedItem(item); setScreen('view'); }}>
+                        <div style={{ fontWeight: 600, fontSize: 18 }}>{item.title}</div>
+                        <div style={{ color: '#888', fontSize: 14, marginTop: 4 }}>{item.description}</div>
+                        <div style={{ marginTop: 8 }}>
+                          {item.tags?.map(tagId => {
+                            const tag = getTagDetails(tagId);
+                            return tag ? <span key={tagId} style={{ background: tag.colorCode || '#eee', color: '#fff', fontWeight: 700, borderRadius: 4, padding: '2px 8px', marginRight: 4, fontSize: 13, textShadow: '0 1px 2px rgba(0,0,0,0.18)' }}>{tag.tag}</span> : null;
+                          })}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : searchMode === "tag" ? (
                 tagFilter.length === 0 ? (
                   <div style={{ color: '#888', textAlign: 'center', marginTop: 48 }}>
                     Please select one or more tags to view items.

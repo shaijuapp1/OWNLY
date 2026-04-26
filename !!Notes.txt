@@ -1,3 +1,15 @@
+Install and use the latest LTS version:
+nvm install --lts
+nvm use --lts
+
+=======
+git config user.email
+
+git add .
+git commit -m "Show all in notes and my list"
+git push -u origin main
+=======
+
 npm run build
 
 firebase deploy

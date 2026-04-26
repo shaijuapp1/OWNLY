@@ -16,6 +16,8 @@ export default function NotesPage() {
   const [tagFilter, setTagFilter] = useState([]);
   // For text search in listing
   const [searchText, setSearchText] = useState("");
+  // Explicit toggle to show all notes in listing
+  const [showAllNotes, setShowAllNotes] = useState(false);
   // Toggle between tag and text search
   const [searchMode, setSearchMode] = useState("text");
   // removed unused selectedTag state
@@ -173,6 +175,8 @@ export default function NotesPage() {
 
   // Listing filter logic: tag or text search
   const getFilteredAndSearchedNotes = () => {
+    if (showAllNotes) return notes;
+
     if (searchMode === "tag") {
       if (!tagFilter.length) return [];
       // Get all selected tags and descendants
@@ -212,9 +216,11 @@ export default function NotesPage() {
                   if (searchMode === "tag") {
                     setSearchMode("text");
                     setTagFilter([]);
+                    setShowAllNotes(false);
                   } else {
                     setSearchMode("tag");
                     setSearchText("");
+                    setShowAllNotes(false);
                   }
                 }}
                 style={{
@@ -233,9 +239,11 @@ export default function NotesPage() {
                   if (searchMode === "text") {
                     setSearchMode("tag");
                     setSearchText("");
+                    setShowAllNotes(false);
                   } else {
                     setSearchMode("text");
                     setTagFilter([]);
+                    setShowAllNotes(false);
                   }
                 }}
                 style={{
@@ -248,6 +256,27 @@ export default function NotesPage() {
               >
                 Text Search
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchMode("text");
+                  setSearchText("");
+                  setTagFilter([]);
+                  setShowAllNotes(true);
+                }}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 4,
+                  border: '1px solid #007bff',
+                  background: showAllNotes ? '#007bff' : '#fff',
+                  color: showAllNotes ? '#fff' : '#007bff',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  marginLeft: 8
+                }}
+              >
+                Show All
+              </button>
             </div>
             {/* Tag filter multi-select (only in tag mode) */}
             {searchMode === "tag" && (
@@ -255,6 +284,7 @@ export default function NotesPage() {
                 <DropdownTreeSelect
                   data={buildTagTree(tags, "", tagFilter)}
                   onChange={(currentNode, selectedNodes) => {
+                    setShowAllNotes(false);
                     setTagFilter(selectedNodes.map(n => n.value));
                   }}
                   texts={{ placeholder: 'Filter by tags...' }}
@@ -275,7 +305,10 @@ export default function NotesPage() {
                 <input
                   type="text"
                   value={searchText}
-                  onChange={e => setSearchText(e.target.value)}
+                  onChange={e => {
+                    setShowAllNotes(false);
+                    setSearchText(e.target.value);
+                  }}
                   placeholder="Search title or content..."
                   style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
                 />
