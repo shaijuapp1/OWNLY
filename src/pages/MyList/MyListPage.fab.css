@@ -1,0 +1,42 @@
+.floating-add-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  font-size: 3.5rem;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  padding: 0;
+  outline: none;
+}
+
+.floating-add-btn:hover {
+  background-color: #218838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.floating-add-btn:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 480px) {
+  .floating-add-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 65px;
+    height: 65px;
+  }
+}

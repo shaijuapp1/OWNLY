@@ -1,0 +1,27 @@
+npm run build
+
+firebase deploy
+
+
+npm start
+
+
+cd /Users/shaijukumarkappillilbalakrishnan/TestCode/Firebase/ownly
+
+# 2. Deploy only the functions
+firebase deploy --only functions
+
+In mobile view Categories section taking half of the page. 
+In mobile view show Categories like icon to select to save more space
+
+1. List available Node.js versions:
+nvm ls-remote
+
+2. Install and use the latest LTS version:
+nvm install --lts
+nvm use --lts
+
+3. (Optional) Set the latest LTS as default:
+nvm alias default lts/*
+
+https://www.alphavantage.co/query?function=GLOBAL_QUOTE&apikey=RUXQDNE5MAXBILQJ&symbol=GLD

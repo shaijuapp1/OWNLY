@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Code Details</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #f8fafc; color: #222; }
+    h1 { color: #3b82f6; }
+    h2 { color: #6366f1; margin-top: 2rem; }
+    pre { background: #f1f5f9; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    .file-section { margin-bottom: 2.5rem; }
+    .code-desc { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Project Code Details</h1>
+  <p>This document describes the structure and code of your Firebase React application. Each section covers a file or folder, with explanations of its purpose and key code.</p>
+
+  <div class="file-section">
+    <h2>src/firebase.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Initializes Firebase and exports the authentication and Firestore database instances.<br>
+      <strong>Key code:</strong>
+      <pre>// src/firebase.js
+import { initializeApp } from "firebase/app";
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();
+export const db = getFirestore(app);
+</pre>
+      <ul>
+        <li>Sets up Firebase app with your config.</li>
+        <li>Exports <code>auth</code> for authentication, <code>provider</code> for Google sign-in, and <code>db</code> for Firestore access.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="file-section">
+    <h2>src/App.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Main app component, handles routing and authentication/authorization logic.<br>
+      <strong>Key code:</strong>
+      <pre>// src/App.js
+import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { auth, db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
+// ...imports for pages...
+
+function App() {
+  const [user, setUser] = useState(undefined);
+  const [role, setRole] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (u) => {
+      setUser(u);
+      if (u) {
+        const userRef = doc(db, "users", u.email);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          setRole(snap.data().role);
+        } else {
+          setRole(null);
+          navigate("/not-authorized");
+        }
+      } else {
+        setRole(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
+  if (location.pathname !== "/not-authorized" && (user === undefined || (user && role === null))) {
+    return <div>Loading...</div>;
+    <h2>src/App.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Main app component, handles routing and authentication/authorization logic.<br>
+      <strong>Control Flow Explanation:</strong>
+      <ol>
+        <li><b>State Initialization:</b> <code>user</code> holds the Firebase Auth user (or <code>undefined</code> while loading). <code>role</code> holds the user's role from Firestore.</li>
+        <li><b>Auth Listener:</b> <code>useEffect</code> sets up <code>auth.onAuthStateChanged</code> to listen for login/logout. When a user logs in, it fetches their role from Firestore using their email as the document ID. If the user document exists, <code>role</code> is set; otherwise, <code>role</code> is set to <code>null</code> and the user is redirected to <code>/not-authorized</code>.</li>
+        <li><b>Loading State:</b> If the app is determining authentication or role (and not on <code>/not-authorized</code>), it shows <code>Loading...</code>.</li>
+        <li><b>Routing:</b> Uses <code>react-router-dom</code> to define routes:
+          <ul>
+            <li><b>/</b>: If authenticated and <code>role === "admin"</code>, shows <code>Dashboard</code>. If authenticated but not admin, redirects to <code>/not-authorized</code>. If not authenticated, shows <code>Login</code>.</li>
+            <li><b>/dashboard</b>, <b>/users</b>, <b>/banks</b>: Only accessible if <code>user</code> is authenticated and <code>role === "admin"</code>; otherwise, redirects to <code>/</code>.</li>
+            <li><b>/not-authorized</b>: Shows a message and a sign out button for unauthorized users.</li>
+          </ul>
+        </li>
+        <li><b>Sign Out:</b> The Not Authorized page provides a sign out button that logs the user out and redirects to the login page.</li>
+      </ol>
+      <strong>Key code:</strong>
+      <pre>// src/App.js
+  );
+}
+
+export default function AppWithRouter() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
+</pre>
+      <ul>
+        <li>Handles user authentication and role-based access.</li>
+        <li>Redirects unauthorized users to <code>/not-authorized</code>.</li>
+        <li>Defines all main routes for the app.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="file-section">
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider, db } from "../firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+
+export default function Login() {
+  const login = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      // Save user in Firestore if not exists
+    <h2>src/firebase.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Initializes Firebase and exports the authentication and Firestore database instances.<br>
+      <strong>Key code:</strong>
+      <pre>// src/firebase.js
+          email: user.email,
+          role: "admin", // first user = admin
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  // ...UI code for login button...
+}
+      <ul>
+        <li><b>initializeApp(config):</b> Initializes and returns the Firebase app instance using your project's configuration object. This must be called before using any Firebase services.</li>
+        <li><b>getAuth(app):</b> Returns the Firebase Authentication instance associated with your app, enabling user authentication features (sign in, sign out, etc.).</li>
+        <li><b>getFirestore(app):</b> Returns the Firestore database instance for your app, allowing you to read and write data in Firestore.</li>
+        <li>Exports <code>auth</code> for authentication, <code>provider</code> for Google sign-in, and <code>db</code> for Firestore access.</li>
+      </ul>
+    </div>
+</pre>
+      <ul>
+        <li>Handles Google sign-in and creates user document in Firestore if not present.</li>
+        <li>Assigns <code>role: "admin"</code> to the first user.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="file-section">
+    <h2>src/pages/Dashboard.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Shows a welcome message and sign out button for the logged-in user.<br>
+      <strong>Key code:</strong>
+      <pre>// src/pages/Dashboard.js
+import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
+
+export default function Dashboard() {
+  const user = auth.currentUser;
+  const navigate = useNavigate();
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/");
+  };
+  // ...UI code for welcome and sign out...
+}
+</pre>
+      <ul>
+        <li>Displays the current user's name and a sign out button.</li>
+        <li>Handles sign out and navigation to login.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="file-section">
+    <h2>src/pages/Users/UsersPage.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Placeholder for user management.<br>
+      <strong>Key code:</strong>
+      <pre>// src/pages/Users/UsersPage.js
+import React from "react";
+export default function UsersPage() {
+  return (
+    <div style={{ padding: 40 }}>
+      <h2>Users Page</h2>
+      <p>This is the users management page.</p>
+    </div>
+  );
+}
+      <ul>
+        <li>Handles user authentication and role-based access.</li>
+        <li>Redirects unauthorized users to <code>/not-authorized</code>.</li>
+        <li>Defines all main routes for the app.</li>
+      </ul>
+    </div>
+</pre>
+      <ul>
+        <li>Placeholder for future user management features.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="file-section">
+    <h2>src/pages/Banks/BanksPage.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> Placeholder for bank management.<br>
+      <strong>Key code:</strong>
+      <pre>// src/pages/Banks/BanksPage.js
+import React from "react";
+export default function BanksPage() {
+  return (
+    <div style={{ padding: 40 }}>
+      <h2>Banks Page</h2>
+      <p>This is the banks management page.</p>
+    </div>
+  );
+}
+</pre>
+      <ul>
+        <li>Placeholder for future bank management features.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="file-section">
+    <h2>src/components/ProtectedRoute.js</h2>
+    <div class="code-desc">
+      <strong>Purpose:</strong> (If used) Protects routes by checking authentication.<br>
+      <strong>Key code:</strong>
+      <pre>// src/components/ProtectedRoute.js
+import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { auth } from "../firebase";
+
+export default function ProtectedRoute({ children }) {
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged(setUser);
+    return () => unsub();
+  }, []);
+  if (user === null) return <div>Loading...</div>;
+  return user ? children : <Navigate to="/" />;
+}
+</pre>
+      <ul>
+        <li>Redirects unauthenticated users to login.</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>
